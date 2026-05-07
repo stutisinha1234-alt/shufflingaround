@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cleaning">
+<meta name="theme-color" content="#E8825A">
+<title>🏠 My Cleaning Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+
+:root {
+  --burnt:       #E8825A;
+  --burnt-light: #F2A987;
+  --burnt-pale:  #FAE8DF;
+  --burnt-dark:  #C5613D;
+  --pink:        #F7D6DF;
+  --pink-mid:    #F0ABBE;
+  --cream:       #FDF6F0;
+  --warm:        #FFFAF7;
+  --tx:          #3D2314;
+  --tx-mid:      #7A4A35;
+  --tx-light:    #B07A6A;
+  --bdr:         rgba(200,110,80,0.18);
+  --ok:          #6BA86A;
+  --ok-bg:       #EAF4E9;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { height: 100%; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--tx);
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── FLORAL BORDER ── */
+.floral {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.floral svg { width: 100%; height: 100%; }
+
+/* ── LAYOUT ── */
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.75rem 1.25rem 5rem;
+}
+
+/* ── HEADER ── */
+.header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1.5px dashed var(--pink-mid);
+}
+.header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.9rem;
+  font-weight: 500;
+  color: var(--burnt-dark);
+  line-height: 1.15;
+}
+.header p {
+  font-size: 12.5px;
+  color: var(--tx-light);
+  font-style: italic;
+  margin-top: 5px;
+}
+
+/* ── STATS ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  margin-bottom: 1.25rem;
+}
+.stat {
+  background: var(--warm);
+  border: 1px solid var(--bdr);
+  border-radius: 12px;
+  padding: 9px 6px;
+  text-align: center;
+}
+.stat-letter {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  color: var(--burnt-dark);
+}
+.stat-count { font-size: 11px; color: var(--tx-light); margin-top: 2px; }
+
+/* ── DICE BOX ── */
+.dice-box {
+  background: var(--warm);
+  border: 1px solid var(--bdr);
+  border-radius: 18px;
+  padding: 1.4rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .9rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.dice-box::after {
+  content: '';
+  position: absolute;
+  top: -24px; right: -24px;
+  width: 80px; height: 80px;
+  background: var(--burnt-pale);
+  border-radius: 50%;
+  opacity: .5;
+}
+
+.die {
+  position: relative;
+  width: 100px; height: 100px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 3px 10px rgba(200,100,60,.22));
+  transition: transform .12s;
+}
+.die:active { transform: scale(.93); }
+.die svg { width: 100%; height: 100%; }
+.die-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  color: var(--burnt-dark);
+  pointer-events: none;
+  transition: opacity .15s;
+}
+
+.roll-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 9px 28px;
+  border-radius: 50px;
+  background: var(--burnt);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(200,100,60,.28);
+  transition: background .15s, transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.roll-btn:active { transform: scale(.96); background: var(--burnt-dark); }
+.roll-btn:disabled { opacity: .4; cursor: default; }
+
+/* ── RESULT CARD ── */
+.result {
+  width: 100%;
+  background: var(--burnt-pale);
+  border: 1.5px solid var(--burnt-light);
+  border-radius: 13px;
+  padding: .9rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  transition: opacity .25s, transform .25s;
+}
+.result.hidden { opacity: 0; transform: translateY(5px); pointer-events: none; }
+
+.badge {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.bA { background:#FDDDD0; color:#9C3D1E; border:1px solid #F5B09A; }
+.bB { background:#F7D6DF; color:#8C2D4F; border:1px solid #F0ABBE; }
+.bC { background:#FFF0CC; color:#7A5200; border:1px solid #FFD97A; }
+.bD { background:#D8F0EB; color:#1A6B55; border:1px solid #9ADACB; }
+
+.result-info { flex: 1; min-width: 0; }
+.result-name { font-size: 14.5px; font-weight: 500; color: var(--tx); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.result-sub  { font-size: 11.5px; color: var(--tx-light); font-style: italic; margin-top: 2px; }
+
+.done-btn {
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 50px;
+  border: 1px solid var(--burnt-light);
+  background: #fff;
+  color: var(--burnt-dark);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.done-btn:active { background: var(--burnt-pale); }
+.done-btn.marked { background: var(--ok-bg); color: var(--ok); border-color: #a8d4a7; }
+
+/* ── TABS ── */
+.tabs { display: flex; gap: 6px; margin-bottom: .85rem; }
+.tab {
+  font-size: 12.5px;
+  padding: 6px 15px;
+  border-radius: 50px;
+  border: 1px solid var(--bdr);
+  background: transparent;
+  color: var(--tx-mid);
+  cursor: pointer;
+  transition: all .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.tab.active { background: var(--burnt); color: #fff; border-color: var(--burnt); }
+.tab:active:not(.active) { background: var(--burnt-pale); }
+
+/* ── LEGEND ── */
+.legend {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  font-size: 11.5px; color: var(--tx-light);
+  margin-bottom: .85rem;
+}
+.legend span { display: flex; align-items: center; gap: 4px; }
+.ldot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── PANELS ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── TASK LIST ── */
+.task-list { display: flex; flex-direction: column; gap: 5px; }
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--bdr);
+  background: var(--warm);
+  transition: background .12s, opacity .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.task-row:active { background: var(--burnt-pale); }
+.task-row.done { opacity: .45; }
+.task-row.done .tname { text-decoration: line-through; }
+
+.chk {
+  width: 21px; height: 21px;
+  border-radius: 50%;
+  border: 1.5px solid var(--burnt-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  background: #fff;
+  transition: all .15s;
+  font-size: 11px;
+  color: transparent;
+}
+.chk.on { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+
+.tname { flex: 1; font-size: 13.5px; min-width: 0; }
+.tmeta { font-size: 10.5px; color: var(--tx-light); font-style: italic; white-space: nowrap; }
+.tbadge {
+  font-size: 10px;
+  width: 20px; height: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── SECTION LABELS ── */
+.sec-label {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--tx-light);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  padding: 11px 3px 5px;
+}
+.sec-line { height: 1px; background: var(--bdr); margin: 7px 0; }
+
+/* ── FOOTER ── */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.4rem;
+  padding-top: .9rem;
+  border-top: 1.5px dashed var(--pink-mid);
+}
+.reset-btn {
+  font-size: 11.5px;
+  color: var(--tx-light);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+.export-btn {
+  font-size: 12px;
+  padding: 6px 13px;
+  border-radius: 50px;
+  border: 1px solid var(--burnt-light);
+  background: #fff;
+  color: var(--burnt-dark);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.export-btn:active { background: var(--burnt-pale); }
+
+/* ── INSTALL HINT ── */
+.install-hint {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--burnt);
+  color: #fff;
+  font-size: 13px;
+  padding: 11px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  z-index: 100;
+  box-shadow: 0 -2px 10px rgba(0,0,0,.12);
+}
+.install-hint.hidden { display: none; }
+.install-hint button {
+  font-size: 12px;
+  padding: 5px 13px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.install-hint .yes { background: #fff; color: var(--burnt-dark); font-weight: 500; }
+.install-hint .no  { background: transparent; color: rgba(255,255,255,.7); }
+
+@keyframes bump { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+</style>
+</head>
+<body>
+
+<!-- Fixed floral corners -->
+<div class="floral" aria-hidden="true">
+<svg viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="fl1" viewBox="0 0 60 60">
+      <!-- big pink flower -->
+      <circle cx="30" cy="30" r="10" fill="#F7D6DF"/>
+      <circle cx="30" cy="16" r="8" fill="#F0ABBE"/>
+      <circle cx="30" cy="44" r="8" fill="#F0ABBE"/>
+      <circle cx="16" cy="30" r="8" fill="#F0ABBE"/>
+      <circle cx="44" cy="30" r="8" fill="#F0ABBE"/>
+      <circle cx="20" cy="20" r="6" fill="#F0ABBE"/>
+      <circle cx="40" cy="20" r="6" fill="#F0ABBE"/>
+      <circle cx="20" cy="40" r="6" fill="#F0ABBE"/>
+      <circle cx="40" cy="40" r="6" fill="#F0ABBE"/>
+      <circle cx="30" cy="30" r="7" fill="#FAE8DF"/>
+    </symbol>
+    <symbol id="fl2" viewBox="0 0 44 44">
+      <!-- small orange flower -->
+      <circle cx="22" cy="22" r="7" fill="#F2A987"/>
+      <circle cx="22" cy="11" r="6" fill="#E8825A"/>
+      <circle cx="22" cy="33" r="6" fill="#E8825A"/>
+      <circle cx="11" cy="22" r="6" fill="#E8825A"/>
+      <circle cx="33" cy="22" r="6" fill="#E8825A"/>
+      <circle cx="14" cy="14" r="4.5" fill="#E8825A"/>
+      <circle cx="30" cy="14" r="4.5" fill="#E8825A"/>
+      <circle cx="14" cy="30" r="4.5" fill="#E8825A"/>
+      <circle cx="30" cy="30" r="4.5" fill="#E8825A"/>
+      <circle cx="22" cy="22" r="5" fill="#FAE8DF"/>
+    </symbol>
+    <symbol id="leaf" viewBox="0 0 30 16">
+      <ellipse cx="15" cy="8" rx="14" ry="7" fill="#C8E6C0"/>
+      <line x1="2" y1="8" x2="28" y2="8" stroke="#9DC49A" stroke-width="1.2" fill="none"/>
+    </symbol>
+    <symbol id="bud" viewBox="0 0 18 26">
+      <ellipse cx="9" cy="16" rx="7" ry="10" fill="#F7D6DF"/>
+      <ellipse cx="9" cy="9" rx="5" ry="7" fill="#F0ABBE"/>
+      <circle cx="9" cy="5" r="4" fill="#F0ABBE"/>
+    </symbol>
+  </defs>
+
+  <!-- top-left -->
+  <g opacity=".52" transform="translate(0,0) scale(0.13)">
+    <use href="#fl1" x="10" y="10"/>
+    <use href="#fl2" x="62" y="4" width="44" height="44"/>
+    <use href="#leaf" x="48" y="58" transform="rotate(-35,63,66)"/>
+    <use href="#bud" x="95" y="40"/>
+    <use href="#fl2" x="0" y="70" width="34" height="34"/>
+    <use href="#leaf" x="30" y="92" transform="rotate(20,45,100)"/>
+  </g>
+
+  <!-- top-right -->
+  <g opacity=".52" transform="translate(100,0) scale(-0.13,0.13)">
+    <use href="#fl1" x="10" y="10"/>
+    <use href="#fl2" x="62" y="4" width="44" height="44"/>
+    <use href="#leaf" x="48" y="58" transform="rotate(-35,63,66)"/>
+    <use href="#bud" x="95" y="40"/>
+    <use href="#fl2" x="0" y="70" width="34" height="34"/>
+    <use href="#leaf" x="30" y="92" transform="rotate(20,45,100)"/>
+  </g>
+
+  <!-- bottom-left -->
+  <g opacity=".52" transform="translate(0,100) scale(0.13,-0.13)">
+    <use href="#fl1" x="10" y="10"/>
+    <use href="#fl2" x="62" y="4" width="44" height="44"/>
+    <use href="#leaf" x="48" y="58" transform="rotate(-35,63,66)"/>
+    <use href="#bud" x="95" y="40"/>
+    <use href="#fl2" x="0" y="70" width="34" height="34"/>
+    <use href="#leaf" x="30" y="92" transform="rotate(20,45,100)"/>
+  </g>
+
+  <!-- bottom-right -->
+  <g opacity=".52" transform="translate(100,100) scale(-0.13,-0.13)">
+    <use href="#fl1" x="10" y="10"/>
+    <use href="#fl2" x="62" y="4" width="44" height="44"/>
+    <use href="#leaf" x="48" y="58" transform="rotate(-35,63,66)"/>
+    <use href="#bud" x="95" y="40"/>
+    <use href="#fl2" x="0" y="70" width="34" height="34"/>
+    <use href="#leaf" x="30" y="92" transform="rotate(20,45,100)"/>
+  </g>
+
+  <!-- left mid -->
+  <g opacity=".4" transform="translate(0,42) scale(0.1)">
+    <use href="#fl2" x="0" y="20" width="44" height="44"/>
+    <use href="#leaf" x="30" y="60" transform="rotate(-50,45,68)"/>
+    <use href="#bud" x="45" y="0"/>
+  </g>
+
+  <!-- right mid -->
+  <g opacity=".4" transform="translate(100,42) scale(-0.1,0.1)">
+    <use href="#fl2" x="0" y="20" width="44" height="44"/>
+    <use href="#leaf" x="30" y="60" transform="rotate(-50,45,68)"/>
+    <use href="#bud" x="45" y="0"/>
+  </g>
+
+  <!-- top mid -->
+  <g opacity=".35" transform="translate(38,0) scale(0.09)">
+    <use href="#fl1" x="20" y="5" width="60" height="60"/>
+    <use href="#fl2" x="80" y="0" width="34" height="34"/>
+    <use href="#leaf" x="60" y="55" transform="rotate(15,75,63)"/>
+  </g>
+
+  <!-- bottom mid -->
+  <g opacity=".35" transform="translate(38,100) scale(0.09,-0.09)">
+    <use href="#fl1" x="20" y="5" width="60" height="60"/>
+    <use href="#fl2" x="80" y="0" width="34" height="34"/>
+    <use href="#leaf" x="60" y="55" transform="rotate(15,75,63)"/>
+  </g>
+</svg>
+</div>
+
+<!-- MAIN APP -->
+<div class="wrap">
+
+  <div class="header">
+    <h1>🏠 My Cleaning Tracker</h1>
+    <p>Roll the die · tackle what comes up · keep it blooming</p>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <!-- Dice section -->
+  <div class="dice-box">
+    <div class="die" id="die" onclick="roll()">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="50,4 96,26 96,74 50,96 4,74 4,26"
+          fill="#FAE8DF" stroke="#E8825A" stroke-width="2.5"/>
+        <polygon points="50,17 83,34 83,66 50,83 17,66 17,34"
+          fill="none" stroke="#F2A987" stroke-width="1"/>
+      </svg>
+      <div class="die-num" id="die-num">?</div>
+    </div>
+    <button class="roll-btn" id="roll-btn" onclick="roll()">✦ Roll the die</button>
+    <div class="result hidden" id="result">
+      <div class="badge" id="res-badge"></div>
+      <div class="result-info">
+        <div class="result-name" id="res-name"></div>
+        <div class="result-sub"  id="res-sub"></div>
+      </div>
+      <button class="done-btn" id="done-btn" onclick="markDone()">Mark done</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" id="tab-all"     onclick="showTab('all')">All tasks</button>
+    <button class="tab"        id="tab-history" onclick="showTab('history')">✓ This week</button>
+  </div>
+
+  <div class="legend">
+    <span><span class="ldot" style="background:#FDDDD0;border:1px solid #F5B09A"></span>A · daily</span>
+    <span><span class="ldot" style="background:#F7D6DF;border:1px solid #F0ABBE"></span>B · weekly</span>
+    <span><span class="ldot" style="background:#FFF0CC;border:1px solid #FFD97A"></span>C · monthly</span>
+    <span><span class="ldot" style="background:#D8F0EB;border:1px solid #9ADACB"></span>D · whenever</span>
+  </div>
+
+  <div class="panel active" id="panel-all">
+    <div class="task-list" id="task-list"></div>
+  </div>
+
+  <div class="panel" id="panel-history">
+    <div id="history-list"></div>
+  </div>
+
+  <div class="footer">
+    <button class="reset-btn" onclick="resetAll()">Reset all</button>
+    <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+
+</div>
+
+<!-- Install hint -->
+<div class="install-hint hidden" id="install-hint">
+  <span>Add to home screen for app-like access!</span>
+  <div style="display:flex;gap:6px">
+    <button class="yes" onclick="installPWA()">Install</button>
+    <button class="no"  onclick="closeHint()">✕</button>
+  </div>
+</div>
+
+<script>
+/* ── DATA ── */
+const TASKS = [
+  {n:"Vacuum the house",       c:"A"},
+  {n:"Mop the floors",         c:"A"},
+  {n:"Wash all dishes",        c:"A"},
+  {n:"Wipe kitchen counters",  c:"A"},
+  {n:"Clothes in hamper",      c:"A"},
+  {n:"Vacuum bathroom floors", c:"A"},
+  {n:"Kitchen trash",          c:"A"},
+  {n:"Wash the comforters",    c:"B"},
+  {n:"Change flat sheets",     c:"B"},
+  {n:"Clean the stove top",    c:"B"},
+  {n:"Change kitchen towel",   c:"B"},
+  {n:"Jackets on hangers",     c:"B"},
+  {n:"Fold your clothes",      c:"B"},
+  {n:"Desk trash removal",     c:"B"},
+  {n:"Replenish bathroom rolls",c:"B"},
+  {n:"Wipe kitchen + bathroom sink + mirror", c:"B"},
+  {n:"Sanitize toilet seat",   c:"B"},
+  {n:"Wipe desk",              c:"B"},
+  {n:"Sweep with broom",       c:"C"},
+  {n:"Change bathroom trash",  c:"C"},
+  {n:"Wipe bathroom floors",   c:"C"},
+  {n:"Wash bathroom mat",      c:"C"},
+  {n:"Wipe other counters",    c:"C"},
+  {n:"Finally buy flowers 🌸", c:"D"},
+];
+
+const FREQ = {A:"High frequency",B:"Regular",C:"Less frequent",D:"Rare treat"};
+const DMAP = {1:"A",2:"A",3:"A",4:"A",5:"B",6:"B",7:"B",8:"C",9:"C",10:"D"};
+const BC   = {A:"bA",B:"bB",C:"bC",D:"bD"};
+
+/* ── STATE ── */
+let state = {};
+let rollIdx = null;
+
+function load() {
+  try { state = JSON.parse(localStorage.getItem('ct3') || '{}'); } catch(e) { state = {}; }
+}
+function save() {
+  try { localStorage.setItem('ct3', JSON.stringify(state)); } catch(e) {}
+}
+load();
+
+/* ── UTILS ── */
+function ago(ts) {
+  const s = (Date.now()-ts)/1000;
+  if (s < 90)   return 'just now';
+  if (s < 3600) return Math.round(s/60)+'m ago';
+  if (s < 86400)return Math.round(s/3600)+'h ago';
+  return Math.round(s/86400)+'d ago';
+}
+
+/* ── RENDER: STATS ── */
+function renderStats() {
+  document.getElementById('stats').innerHTML =
+    ['A','B','C','D'].map(c => {
+      const tot = TASKS.filter(t=>t.c===c).length;
+      const dn  = TASKS.filter((t,i)=>t.c===c&&state[i]).length;
+      return `<div class="stat">
+        <div class="stat-letter">${c}</div>
+        <div class="stat-count">${dn}/${tot}</div>
+      </div>`;
+    }).join('');
+}
+
+/* ── RENDER: ALL TASKS ── */
+function renderAll() {
+  document.getElementById('task-list').innerHTML =
+    TASKS.map((t,i) => {
+      const ts = state[i];
+      const on = !!ts;
+      return `<div class="task-row${on?' done':''}">
+        <div class="chk${on?' on':''}" onclick="toggle(${i})">✓</div>
+        <span class="tname">${t.n}</span>
+        ${on ? `<span class="tmeta">${ago(ts)}</span>` : ''}
+        <div class="tbadge ${BC[t.c]}">${t.c}</div>
+      </div>`;
+    }).join('');
+}
+
+/* ── RENDER: HISTORY ── */
+function renderHistory() {
+  const week = Date.now() - 7*24*3600*1000;
+  const done = TASKS
+    .map((t,i)=>({...t,i,ts:state[i]}))
+    .filter(t=>t.ts)
+    .sort((a,b)=>b.ts-a.ts);
+
+  const recent = done.filter(t=>t.ts>=week);
+  const older  = done.filter(t=>t.ts<week);
+
+  const el = document.getElementById('history-list');
+
+  if (!done.length) {
+    el.innerHTML = `<p style="text-align:center;color:var(--tx-light);padding:2rem;font-style:italic;font-size:13px">No completed tasks yet — roll the die!</p>`;
+    return;
+  }
+
+  const row = t => `<div class="task-row">
+    <div class="chk on" onclick="toggle(${t.i})">✓</div>
+    <span class="tname">${t.n}</span>
+    <span class="tmeta">${ago(t.ts)}</span>
+    <div class="tbadge ${BC[t.c]}">${t.c}</div>
+  </div>`;
+
+  let html = '';
+  if (recent.length) {
+    html += `<div class="sec-label">✓ Done this week (${recent.length})</div>`;
+    html += recent.map(row).join('');
+  }
+  if (older.length) {
+    if (recent.length) html += `<div class="sec-line"></div>`;
+    html += `<div class="sec-label">⏳ Overdue / not done recently (${older.length})</div>`;
+    html += older.map(row).join('');
+  }
+  el.innerHTML = html;
+}
+
+function renderPage() { renderStats(); renderAll(); renderHistory(); }
+
+/* ── TOGGLE ── */
+function toggle(i) {
+  if (state[i]) delete state[i]; else state[i] = Date.now();
+  save();
+  renderPage();
+  if (rollIdx === i) refreshDoneBtn();
+}
+
+/* ── TABS ── */
+function showTab(name) {
+  ['all','history'].forEach(n => {
+    document.getElementById('tab-'+n).classList.toggle('active', n===name);
+    document.getElementById('panel-'+n).classList.toggle('active', n===name);
+  });
+}
+
+/* ── DICE ── */
+function roll() {
+  const btn = document.getElementById('roll-btn');
+  const numEl = document.getElementById('die-num');
+  btn.disabled = true;
+  numEl.style.opacity = '0';
+
+  let ticks = 0;
+  const iv = setInterval(() => {
+    numEl.textContent = Math.floor(Math.random()*10)+1;
+    ticks++;
+    if (ticks >= 13) {
+      clearInterval(iv);
+      const n = Math.floor(Math.random()*10)+1;
+      numEl.textContent = n;
+      numEl.style.opacity = '1';
+      showResult(n);
+      btn.disabled = false;
+    }
+  }, 58);
+  setTimeout(() => { numEl.style.opacity = '1'; }, 200);
+}
+
+function showResult(n) {
+  const cat  = DMAP[n];
+  const pool = TASKS.map((t,i)=>({...t,i})).filter(t=>t.c===cat && !state[t.i]);
+  const all  = TASKS.map((t,i)=>({...t,i})).filter(t=>t.c===cat);
+  const pick = pool.length ? pool[Math.floor(Math.random()*pool.length)]
+                           : all[Math.floor(Math.random()*all.length)];
+  rollIdx = pick.i;
+
+  document.getElementById('res-badge').className = 'badge '+BC[cat];
+  document.getElementById('res-badge').textContent = cat;
+  document.getElementById('res-name').textContent = pick.n;
+  document.getElementById('res-sub').textContent  = `${FREQ[cat]} · Rolled a ${n}`;
+  document.getElementById('result').classList.remove('hidden');
+  refreshDoneBtn();
+}
+
+function markDone() {
+  if (rollIdx === null) return;
+  if (state[rollIdx]) delete state[rollIdx]; else state[rollIdx] = Date.now();
+  save();
+  renderPage();
+  refreshDoneBtn();
+}
+
+function refreshDoneBtn() {
+  const btn = document.getElementById('done-btn');
+  const done = rollIdx !== null && !!state[rollIdx];
+  btn.textContent = done ? '✓ Done!' : 'Mark done';
+  btn.classList.toggle('marked', done);
+}
+
+/* ── RESET ── */
+function resetAll() {
+  if (!confirm('Reset all completed tasks?')) return;
+  state = {};
+  save();
+  rollIdx = null;
+  document.getElementById('result').classList.add('hidden');
+  renderPage();
+}
+
+/* ── EXPORT ── */
+function exportCSV() {
+  const rows = ['Task,Category,Status,"Completed At"'];
+  TASKS.forEach((t,i) => {
+    const ts = state[i];
+    rows.push(`"${t.n}",${t.c},${ts?'Done':'Pending'},"${ts?new Date(ts).toLocaleString():''}"`);
+  });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([rows.join('\n')], {type:'text/csv'}));
+  a.download = 'cleaning-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+/* ── PWA INSTALL ── */
+let pwaPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  pwaPrompt = e;
+  if (!localStorage.getItem('hint-closed')) {
+    document.getElementById('install-hint').classList.remove('hidden');
+  }
+});
+function installPWA() {
+  if (pwaPrompt) {
+    pwaPrompt.prompt();
+    pwaPrompt.userChoice.then(() => { pwaPrompt = null; closeHint(); });
+  }
+}
+function closeHint() {
+  document.getElementById('install-hint').classList.add('hidden');
+  localStorage.setItem('hint-closed','1');
+}
+
+/* ── BOOT ── */
+renderPage();
+</script>
+</body>
+</html>
