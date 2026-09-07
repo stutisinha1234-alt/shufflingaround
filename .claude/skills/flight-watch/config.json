@@ -1,0 +1,64 @@
+{
+  "origin_airports": ["SFO", "OAK", "SJC"],
+  "destinations": [
+    {
+      "name": "New York",
+      "airports": ["JFK", "LGA", "EWR"],
+      "southwest_only_airports": []
+    },
+    {
+      "name": "Chicago",
+      "airports": ["ORD", "MDW"],
+      "southwest_only_airports": ["MDW"]
+    },
+    {
+      "name": "Durham",
+      "airports": ["RDU"],
+      "southwest_only_airports": []
+    },
+    {
+      "name": "Houston",
+      "airports": ["IAH", "HOU"],
+      "southwest_only_airports": ["HOU"]
+    }
+  ],
+  "horizon": {
+    "start": "2026-09-04",
+    "end": "2026-12-31"
+  },
+  "work_schedule": {
+    "remote_weekdays": [0, 4],
+    "office_weekdays": [1, 2, 3],
+    "_note": "Python date.weekday(): Monday=0 ... Sunday=6. Remote = Mon, Fri."
+  },
+  "holidays": [
+    { "date": "2026-09-07", "name": "Labor Day" },
+    { "date": "2026-10-12", "name": "Columbus Day" },
+    { "date": "2026-11-11", "name": "Veterans Day" },
+    { "date": "2026-11-26", "name": "Thanksgiving" },
+    { "date": "2026-11-27", "name": "Day after Thanksgiving" },
+    { "date": "2026-12-24", "name": "Christmas Eve" },
+    { "date": "2026-12-25", "name": "Christmas Day" }
+  ],
+  "trip_shape": {
+    "min_nights": 3,
+    "max_nights": 16,
+    "departure_weekdays": [2, 3, 4],
+    "return_weekdays": [6, 0, 1],
+    "_note": "Depart Wed/Thu/Fri evening (after the workday). Return Sun/Mon/Tue evening. weekday(): Wed=2 Thu=3 Fri=4 Sun=6 Mon=0 Tue=1."
+  },
+  "pto_buying": {
+    "max_pto_days": 3,
+    "min_nights_per_pto_day": 3,
+    "_note": "A PTO-buying window is only surfaced if it clears this nights-per-PTO-day bar, so a 1-night-per-PTO-day trip never shows up next to the free 4-night baseline."
+  },
+  "alerts": {
+    "new_all_time_low": true,
+    "drop_pct_threshold": 0.12,
+    "_note": "drop_pct_threshold: notify when a fare drops this fraction below its own 30-day median for that exact window."
+  },
+  "amadeus": {
+    "tier": "production",
+    "_note": "Requires AMADEUS_CLIENT_ID / AMADEUS_CLIENT_SECRET env vars for the live (production) API host, not the test host. See SKILL.md."
+  }
+}
