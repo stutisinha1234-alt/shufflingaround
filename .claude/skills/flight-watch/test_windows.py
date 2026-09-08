@@ -82,12 +82,13 @@ class GenerateWindowsTests(unittest.TestCase):
 
     def test_at_least_one_zero_pto_window_per_week_in_horizon(self):
         # Sanity check on the headline finding: PTO is not the scarce
-        # resource here, price is. Every ISO week in the horizon should
-        # offer a free window.
+        # resource here, price is. Every ISO week from "today" (windows.py
+        # clamps its effective start to today so this doesn't need manual
+        # upkeep) through the configured end should offer a free window.
         free_weeks = {
             w.depart.isocalendar()[:2] for w in self.windows if w.pto_days == 0
         }
-        start = date.fromisoformat(self.config["horizon"]["start"])
+        start = max(date.fromisoformat(self.config["horizon"]["start"]), date.today())
         end = date.fromisoformat(self.config["horizon"]["end"])
         d = start
         all_weeks = set()
@@ -95,8 +96,9 @@ class GenerateWindowsTests(unittest.TestCase):
             all_weeks.add(d.isocalendar()[:2])
             d += __import__("datetime").timedelta(days=1)
         missing = all_weeks - free_weeks
-        # Allow the partial first/last calendar week to lack a full window.
-        self.assertLessEqual(len(missing), 1, f"weeks with no free window: {missing}")
+        # Allow the partial first/last calendar week (a Tue "today" won't
+        # yet contain a Thu-eve departure) to lack a full window.
+        self.assertLessEqual(len(missing), 2, f"weeks with no free window: {missing}")
 
     def test_thanksgiving_window_present(self):
         expected = Window(date(2026, 11, 25), date(2026, 11, 30), 0)

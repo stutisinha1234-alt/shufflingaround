@@ -68,7 +68,8 @@ def generate_windows(config: dict | None = None) -> list[Window]:
     (surfaced only when they clear min_nights_per_pto_day)."""
     config = config or load_config()
     shape = config["trip_shape"]
-    horizon_start = date.fromisoformat(config["horizon"]["start"])
+    configured_start = date.fromisoformat(config["horizon"]["start"])
+    horizon_start = max(configured_start, date.today())
     horizon_end = date.fromisoformat(config["horizon"]["end"])
     dep_weekdays = set(shape["departure_weekdays"])
     ret_weekdays = set(shape["return_weekdays"])
