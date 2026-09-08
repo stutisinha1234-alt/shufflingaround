@@ -36,9 +36,27 @@ python3 windows.py          # print the current candidate window set (no network
 python3 -m unittest test_windows -v   # verify the calendar engine
 ```
 
-Recommended cadence: **twice weekly** (e.g. Tuesday and Saturday
-mornings) via a Routine that runs `track.py` then `report.py --alerts`,
-and only messages the user when that second command prints something.
+**A twice-weekly Routine is set up** (Tue/Sat 8am Pacific, trigger
+`trig_01XnCeZYSUsqtTGUwQN9NwqZ`) using `create_new_session_on_fire`, so
+each check runs in a fresh container with a push notification on
+completion. Because that container is thrown away after the run, its
+prompt does three things beyond just running the scripts:
+
+1. Checks out `claude/flight-price-tracking-skill-im1t3y` explicitly --
+   the skill isn't on `main`, so a default checkout wouldn't have it.
+2. After `track.py` appends new rows, **commits and pushes
+   `data/history.jsonl` back to the branch.** This is not optional --
+   without it, every firing starts from an empty history file (fresh
+   container, nothing survives that isn't in git) and the 30-day-median
+   and trend logic in `report.py` would silently reset to nothing every
+   single run instead of accumulating.
+3. Skips `track.py` entirely (rather than logging a wall of null prices)
+   if `AMADEUS_CLIENT_ID`/`AMADEUS_CLIENT_SECRET` aren't set, and says so
+   in its reply instead.
+
+If the branch above ever gets merged or renamed, update the trigger's
+prompt (`update_trigger`) to match -- it hardcodes that branch name since
+Routine prompts can't reference "whatever this session was on."
 
 ## Price source: Amadeus production tier, not test, not scraping
 
